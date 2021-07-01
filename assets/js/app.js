@@ -1,30 +1,29 @@
-// @TODO: YOUR CODE HERE!
+// D3 Homework - Diana Kennen
 var svgWidth = 960;
-var svgHeight = 550;
+var svgHeight = 500;
 
 var margin = {
-    top: 30,
-    right: 30,
-    bottom: 30,
-    left: 30
+    top: 20,
+    right: 40,
+    bottom: 60,
+    left: 100
 };
 
 var width = svgWidth - margin.left - margin.right;
 var height = svgHeight - margin.top - margin.bottom;
 
 //Creating svg canvas
-var svg = d3
-    .select("#scatter")
+var svg = d3.select("#scatter")
     .append("svg")
     .attr("width", svgWidth)
     .attr("height", svgHeight);
 
 //Append the overall chartgroup for the scatter plot
 var chartGroup = svg.append("g")
-    .attr("transform", `translate(${margin.left}), ${margin.top})`);
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 //Importing csv
-d3.csv("../data/data.csv").then(function(healthdata) {
+d3.csv("assets/data/data.csv").then(function(healthdata) {
 
     //Typecasting Poverty and Obesity Data as Numbers
     healthdata.forEach(function(data) {
@@ -34,7 +33,7 @@ d3.csv("../data/data.csv").then(function(healthdata) {
 
     //Creating scale functions for x and y axis
     var xLinearScale = d3.scaleLinear()
-        .domain([20, d3.max(healthdata, d => d.poverty)])
+        .domain([0, d3.max(healthdata, d => d.poverty)])
         .range([0, width]);
     var yLinearScale = d3.scaleLinear()
         .domain([0, d3.max(healthdata, d => d.obesity)])
@@ -50,21 +49,34 @@ d3.csv("../data/data.csv").then(function(healthdata) {
         .call(bottomAxis);
     
     chartGroup.append("g")
-        .attr(leftAxis);
+        .call(leftAxis);
     
-    //Creating circle data points for scatter plot
+    //Creating circle data points for scatter plot by appending circleGroup
     var circlesGroup = chartGroup.selectAll("circle")
         .data(healthdata)
         .enter()
         .append("circle")
-        .attr("cx", d => xLinearScale (d.poverty))
-        .attr("cy", d => xLinearScale (d.obesity))
-        .attr("r", "15")
-        .attr("fill", "light blue")
+        .attr("cx", d => xLinearScale(d.poverty))
+        .attr("cy", d => yLinearScale(d.obesity))
+        .attr("r", "18")
+        .attr("fill", "blue")
         .attr("opacity", ".5")
-        .attr("text", d => d.abbr)
+    
+    //Appending state abbreviations to data points
+    var stateAbbr = chartGroup.selectAll(null)
+        .data(healthdata)
+        .enter()
+        .append("text");
+    
+    stateAbbr
+        .attr("x", d => xLinearScale(d.poverty))
+        .attr("y", d => yLinearScale(d.obesity))
+        .text(d => d.abbr)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "11px")
+        .attr("fill", "white");
 
-    //Create axis labels for x and y axis
+    //Create axis labels for x and y axis by appending text
     chartGroup.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 0 - margin.left + 40)
